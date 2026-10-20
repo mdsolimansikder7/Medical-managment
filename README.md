@@ -29,7 +29,8 @@ The app ships with a client-side demo directory (no backend required):
 - **Seeded staff** — `sadia.islam@medicare.com` (Doctor), `nusrat.karim@medicare.com` (Receptionist), `rakib.hasan@medicare.com` (Lab Technician), `farhana.akter@medicare.com` (Pharmacist) · same 6+ character rule.
 - **Doctor self-registration** — `/sign-up` is doctor-only. Submitting creates a **pending approval**, not a session. Sign in as the Super Admin, open **Staff & roles → Doctor approvals**, and approve the request; the doctor can then sign in with that email.
 - Administrator, reception, laboratory, pharmacy and accounting accounts are **not** publicly registerable — the Super Admin creates them from Staff & roles.
-- Unknown, suspended or invited emails are rejected with a clear message. Accounts live in `localStorage` (`medicare.accounts`, `medicare.pending-doctors`); the session is `medicare.session`.
+- Unknown, suspended or invited emails are rejected with a clear message. Accounts live in `localStorage` (`medicare.accounts`, `medicare.pending-doctors`); the session is `medicare.session.v2`.
+- **Authentication is mandatory** — every dashboard route is guarded. Opening the app without a session redirects to `/sign-in`; there is no auto-login demo session.
 - This is **not production auth** — replace `src/lib/session.tsx` and `src/lib/accounts.ts` with real server-side sessions and role provisioning before deploying to a hospital network.
 
 ## Stack

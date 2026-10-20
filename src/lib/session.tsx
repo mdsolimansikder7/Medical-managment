@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { demoAccount, findAccount, submitDoctorRequest } from "@/lib/accounts";
+import { findAccount, submitDoctorRequest } from "@/lib/accounts";
 
 export type SessionUser = {
   name: string;
@@ -31,10 +31,9 @@ type SessionContextValue = {
   updateUser: (patch: Partial<SessionUser>) => void;
 };
 
-const STORAGE_KEY = "medicare.session";
+const STORAGE_KEY = "medicare.session.v2";
+const LEGACY_STORAGE_KEY = "medicare.session";
 const SIGNED_OUT = "signed-out";
-
-const demoUser: SessionUser = { ...demoAccount };
 
 const SessionContext = React.createContext<SessionContextValue | null>(null);
 
@@ -55,25 +54,26 @@ function isValidEmail(value: string) {
 }
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
-  // The demo account is the default so the dashboard is usable on first load.
-  const [user, setUser] = React.useState<SessionUser | null>(demoUser);
+  // Start signed out. A session only exists after a real sign-in, so the
+  // dashboard can never be opened without authentication.
+  const [user, setUser] = React.useState<SessionUser | null>(null);
   const [ready, setReady] = React.useState(false);
 
   React.useEffect(() => {
     try {
+      // Drop the old auto-created demo session so upgrading users must sign in
+      // once to establish an authenticated session.
+      window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+
       const stored = window.localStorage.getItem(STORAGE_KEY);
-      if (!stored) {
-        setUser(demoUser);
-      } else if (stored === SIGNED_OUT) {
-        setUser(null);
-      } else {
+      if (stored && stored !== SIGNED_OUT) {
         const parsed = JSON.parse(stored) as SessionUser;
         if (parsed && typeof parsed.email === "string") {
-          setUser({ ...demoUser, ...parsed });
+          setUser(parsed);
         }
       }
     } catch {
-      setUser(demoUser);
+      // Corrupt or unavailable storage means no session.
     } finally {
       setReady(true);
     }
